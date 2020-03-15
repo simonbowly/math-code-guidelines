@@ -41,3 +41,60 @@ Most people err too much on the side of "performance" and lose hours of time deb
 * Some styles aren't that useful.
 * Property-based testing is incredibly useful.
 * Be prepared to throw away your tests.
+
+## Classes and Functions
+
+### Bad uses of classes
+
+* See [this talk](https://www.youtube.com/watch?v=o9pEzgHorH0)
+
+This encourages classes being in an uninitialised state:
+
+```python
+class Model:
+    def __init__(self):
+        self._data = None
+
+    def read(self, file_name):
+        self._data = ...
+
+model = Model()
+model.read("/path/to/file")
+```
+
+Prefer a function that returns a fully initialised object:
+
+```python
+class Model:
+    def __init__(self, data):
+        self._data = data
+
+def read_model(file_path):
+    data = ...
+    return Model(data)
+
+model = read_model("/path/to/file")
+```
+
+### Good uses of classes
+
+A static container for data is an excellent use of a class.
+The [dataclasses](https://docs.python.org/3/library/dataclasses.html) package in the standard library (and backported as a pip installable package for older versions) is designed for exactly this use case.
+
+**Reason:** Immutable objects and functions acting on them are easy to debug.
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Task:
+    earliest_start: float
+    latest_start: float
+    resources
+```
+
+Furthermore, a big list of classes (especially with the `__slots__` attribute set) has less performance overhead than a big list of dictionaries due to recent shared-key optimisations in the CPython interpreter (see benchmarks).
+
+Where immutability leads to performance overhead, a class with a well defined invariant should be used.
+All public functions should error if they leave the object in a state where the invariant is violated.
+Use `icontracts` to enforce this.
