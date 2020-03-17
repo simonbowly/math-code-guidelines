@@ -1,6 +1,6 @@
 # Zen of (Python?) Programming for Optimisation
 
-*Work in progress!! I've written this readme page as a sort of aggressively aspirational list of best practice. Next task is to collect a lot of code examples and add/remove/edit these guidelines as we go.*
+*Work in progress!! I've written this readme page as a sort of aggressively aspirational list of thoughts on best practice. Next task is to collect a lot of code examples and add/remove/edit these guidelines as we go.*
 
 **The first programmers were mathematicians: so we should really be better at this than everyone else.**
 
@@ -138,18 +138,19 @@ When writing a function, assert conditions on your inputs and your outputs.
 Then throw a lot of test cases at it using a property based testing library and code until your asserts pass.
 * Write tests at a high level in your code.
 You want your tests to run minimal but complete working examples on well defined APIs that hit as many code paths as possible so there are no surprises later.
+Refactoring is easy when you have a top level test that you know already passes.
 * Be prepared to throw away your tests.
-Sometimes you'll find a small test is helpful as you develop a function but it outlives its usefulness pretty quickly.
+Sometimes you'll find a small test is helpful as you develop a function but it outlives its usefulness pretty quickly when you change the code structure.
 Throw it away if so ... don't confer intrinsic value on it just because it's a test.
 Property based testing makes it easy to write tests without much code, so you don't get too invested.
 
 # Tools to Use
 
-* [pytest-cov](https://github.com/pytest-dev/pytest-cov) - `pytest --cov module --cov-report=html` - see whether the else in your if is actually being hit by your tests.
+* [pytest-cov](https://github.com/pytest-dev/pytest-cov) - `pytest --cov module --cov-report=html` - see whether the `else` in your `if` is actually being hit by your tests.
 * [hypothesis](https://hypothesis.readthedocs.io/en/latest/) - generates data for property based testing.
-* [icontract](https://github.com/Parquery/icontract) - for contract definition. This one is broken on python3.8 and is a little over-engineered IMO ... I'm working on a replacement or a fix :-)
+* [icontract](https://github.com/Parquery/icontract) - for contract definition. This one is broken on python3.8 and is a little over-engineered IMO. It also gives super confusing error messages if you supply the wrong arguments to a function ... I'm working on a replacement or a fix :-)
 * [black](https://black.readthedocs.io/en/stable/) - just let it take over. Drop pep8 and pylint. It will annoy you at first with some of its choices, but eventually you'll just give in.
-* [mypy](https://github.com/python/mypy) - type checking is sometimes useful, but even without types it should catch a lot of undefined variable type errors that pep8 and pylint do, without doubling up on formatters and annoying you about line lengths. But ... this is really the job of tests.
+* [mypy](https://github.com/python/mypy) - type checking is sometimes useful (I'm flirting with it, not sure if sold), but even without types it should catch a lot of undefined variable type errors that pep8 and pylint do, without doubling up on formatters and annoying you about line lengths. But ... this is really the job of tests.
 
 # Benchmarks
 
@@ -158,3 +159,9 @@ More practically, know your tradeoffs between readability, mutability, reasonabi
 Will put some useful test cases together here, starting with:
 
 * [Tiny Object Benchmarks](benchmarks/Tiny-Object-Benchmarks.ipynb)
+
+# Examples
+
+Working example of solving a crossdocking problem.
+
+* [Crossdocking MIP](examples/crossdock)
