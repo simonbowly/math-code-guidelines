@@ -1,7 +1,6 @@
 # Zen of (Python?) Programming for Optimisation
 
-**Work in progress!!**
-*I've written this readme page as a sort of aggressively aspirational list of best practice. Next task is to collect a lot of code examples and add/remove/edit these guidelines as we go.*
+*Work in progress!! I've written this readme page as a sort of aggressively aspirational list of best practice. Next task is to collect a lot of code examples and add/remove/edit these guidelines as we go.*
 
 **The first programmers were mathematicians: so we should really be better at this than everyone else.**
 
@@ -40,6 +39,9 @@ They also make it easier to understand what your code is doing.
 
 Breaking your code down into well-defined functions acting on well-defined objects makes this much easier to achieve.
 It also makes it much easier to include optional state checks that are descriptive for someone reading your code and can be disabled (but left in the code for future testing) once you start to use the code in anger.
+
+Your code should fail quickly in testing if it finds itself in an unexpected state; you shouldn't have to inspect the runtime state to figure that out.
+Your code should also fail quickly if someone tries to use it in an unexpected way.
 
 ## Object-oriented concepts
 
@@ -122,6 +124,10 @@ The counter-argument is that pure functions result in a lot of copying of data.
 However, ease of debugging and speed of development of pure functions more than compensates for performance overhead more often than you might think.
 Most people err too much on the side of "performance" and lose hours of time debugging the results of side effects and mutability.
 
+**Functions aren't just for reuse.**
+
+They are intended to break down your code into digestible bits so you can reason effectively about the behaviour of the whole codebase and maintain a well-defined state as the code runs.
+
 ## Testing
 
 **Test your code by running tests** (not by running it end to end).
@@ -147,5 +153,8 @@ Property based testing makes it easy to write tests without much code, so you do
 
 # Benchmarks
 
-Know your tradeoffs between readability, mutability, reasonability and speed!
-Will put some useful test cases together here...
+The standard line is "don't make performance claims without benchmarks!".
+More practically, know your tradeoffs between readability, mutability, reasonability, memory use, and speed.
+Will put some useful test cases together here, starting with:
+
+* [Tiny Object Benchmarks](benchmarks/Tiny-Object-Benchmarks.ipynb)
