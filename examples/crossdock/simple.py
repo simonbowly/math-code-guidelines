@@ -7,7 +7,7 @@ from crossdock.model import construct_model, solve_model
 
 logging.basicConfig(level=logging.WARNING)
 
-instance = generate_random_instance(199675, 25, 3)
+instance = generate_random_instance(19675, 25, 3)
 model = construct_model(instance)
 solution = solve_model(model)
 

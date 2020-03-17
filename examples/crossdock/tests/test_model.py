@@ -69,3 +69,5 @@ def test_solve_model(model):
     panicked when faced with zero distances (or potentially non-euclidean
     distances). """
     solve_model(model)
+    # TODO check that various output conditions are hit by the input data
+    # e.g. cases where trucks don't use the dock at all

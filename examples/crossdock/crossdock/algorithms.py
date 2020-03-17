@@ -74,11 +74,12 @@ def path_from_edges(edges, start):
     return path
 
 
-# ensure valid solution
 def single_tour_heuristic(instance):
     """ Return an ordering of the demand nodes from the crossdock, finishing at
     the first warehouse, so that one truck can do the rounds. Uses a min distance
-    constructive heuristics followed by 2-opt local search. """
+    constructive heuristics followed by 2-opt local search.
+    TODO finish and integrate this as a start heuristic.
+    """
 
     order = [instance.crossdock_node()]
     remaining = set(instance.all_demand_nodes())

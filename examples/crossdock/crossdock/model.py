@@ -235,7 +235,7 @@ def extract_solution(instance, arc_variables):
 
 def subtour_elimination_callback(model, arc_variables):
     """ Look for subtours and generate constraints which rule out the shortest.
-    NOTE that this callback does not using anything other than its arguments,
+    NOTE that this callback does not use anything other than its arguments,
     and it doesn't have to attach things to the model (it's called with partial()).
     This means it would be testable in isolation with a good mocking object for the
     gurobi model (feed values in via cbGetSolution, check the produced constraint
