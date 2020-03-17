@@ -1,54 +1,78 @@
-# Zen of MIP Modelling
+# Zen of (Python?) Programming for Optimisation
 
-At a really high level, some statements like those in [Zen of Python](https://www.python.org/dev/peps/pep-0020/) *might* be useful.
-However I think the [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md) are a better template.
+**Work in progress!!**
+*I've written this readme page as a sort of aggressively aspirational list of best practice. Next task is to collect a lot of code examples and add/remove/edit these guidelines as we go.*
+
+**The first programmers were mathematicians: so we should really be better at this than everyone else.**
+
+## Why write this?
+
+Some depressingly huge fraction of programmers are focused on website and app development.
+This means the advice you'll find by searching for good software development and testing practices is pretty skewed towards this style of coding.
+Much of it doesn't apply to the type of coding required to build optimisation algorithms, but there are useful nuggets out there we can compile into something useful.
+
+## How to write this?
+
+While the [Zen of Python](https://www.python.org/dev/peps/pep-0020/) sounds nice, I think the [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md) are a better template (maybe not as epically long though).
 They follow a general flow of:
-1. General philosophical ideas (in general, prefer this style to this)
-2. Specific recommendations (In this situtation, do this. Don't do this because **specific example of horrible consequences**)
-3. They develop (or give a general specification of) toolkits that check your code against the guidelines or utilities that package up best practise.
+1. General philosophical ideas (in general, prefer this style to this).
+2. Specific recommendations (In this situtation, do this. Don't do that because **specific example of horrible consequences**).
+3. They develop (or give a general specification of) toolkits that check your code against the guidelines (e.g. clang-tidy) or utilities that package up best practice to make it easier to use (e.g. the GSL).
 
-**The aim should be to be strongly opinionated.**
+I think guides like this should be strongly opinionated, with an "if you do this, you're probably doing it wrong".
+The aim is to nudge new programmers towards best practice; it doesn't prevent a good programmer from going in a different direction, but should make it clear that "if you do it this way, you'd better know what you're doing".
 
-# What could be useful
+# Programming Concepts
 
-* Example projects
-* Best practice guidelines (if this do that)
-* Scaffolding/cookiecutters
-* Utility functions that do things the right way
+Python let's you do pretty much anything, so it's important to know what's appropriate when.
 
-# Software engineering principles
+## Fail-fast, early, and totally
 
-Basic idea is that some of these are useful and some should be ignored.
+If you're relying heavily on the debugger, you're probably spending a lot of time waiting for one part of the code to execute so you can check what the state of all your variables are.
 
-## Object-oriented
+Chances are you've written code that doesn't have a well-defined state.
+This point is **critical** and a lot of the concepts outlined below will help to write code that has well-defined state.
 
-Class heirarchys and whatnot are not very mathematical...
-Classes are most useful for storing data, but they get overused for methods - either they have too few and should be replaced with a function, or they have too many and should be replaced with lots of smaller functions which take only the arguments they need.
+* Polluted namespaces (lots of variables in scope) make for complex states that are hard to reason about.
+They also make it easy to confuse variable names and introduce accidental bugs.
+* Well-defined and comprehensive assertions ensure that between each major set of instructions, your program is in the state you expect it to be in.
+They also make it easier to understand what your code is doing.
 
-## Globals
+Breaking your code down into well-defined functions acting on well-defined objects makes this much easier to achieve.
+It also makes it much easier to include optional state checks that are descriptive for someone reading your code and can be disabled (but left in the code for future testing) once you start to use the code in anger.
 
-Globals are bad.
-There is *always* (?) a way to do without them.
-Everything should have scope.
+## Object-oriented concepts
 
-## Functional Programming
+**Class heirarchies and inheritance are not useful.**
 
-Yes! Make pure functions as much as possible.
-Most people err too much on the side of "performance" and lose hours of time debugging.
+Best to get this one out of the way early: inheritance, polymorphism, class heirarchies, interfaces, etc are pretty much never useful for what we need to do.
+Interfaces are only needed in statically typed languages where you need to know at compile time what methods are available for an object.
+In a duck-typed language like Python, there's not a lot of reasons to use this.
+Plus method resolution order seems to confuse the heck out of people.
 
-## Unit Testing
+The "composition over inheritance" rule applies here - assembling a big function or object out of smaller pieces is much cleaner than relying on the order of execution of methods in a class heirarchy.
+Particularly when you forget to call `super()`.
 
-* Some styles aren't that useful.
-* Property-based testing is incredibly useful.
-* Be prepared to throw away your tests.
+## Classes/objects
 
-## Classes and Functions
+**Objects/classes are very useful** (when used correctly).
 
-### Bad uses of classes
+The above does not mean classes and objects are not useful.
+Objects are extremely useful if used correctly.
 
-* See [this talk](https://www.youtube.com/watch?v=o9pEzgHorH0)
+Here are the correct ways:
 
-This encourages classes being in an uninitialised state:
+* Immutable objects. Immutable objects represent input and output data in a structured and descriptive way.
+Because their data cannot change, there's no possibility of side effects.
+Use frozen structures (`frozenset`, `tuple`) and [dataclasses](https://docs.python.org/3/library/dataclasses.html) to define them.
+
+* Objects with well-defined invariants.
+Classes help you to define a public API for methods that users of the object should call (users being functions or other classes).
+Note that in Python there's no enforcement of public/private so you have to rely on naming conventions and documentation.
+Before and after any public method is called on the object, invariant checks should be made.
+These can be computationally expensive; a good library will allow them to be disabled with a runtime flag.
+
+Here's a really common wrong way to write a class, which encourages a public method to be called and enforces no invariant.
 
 ```python
 class Model:
@@ -59,10 +83,11 @@ class Model:
         self._data = ...
 
 model = Model()
+# BAD!! 'model' is currently in an invalid/unusable state.
 model.read("/path/to/file")
 ```
 
-Prefer a function that returns a fully initialised object:
+This is the right way, where the user of the class can't make a mistake.
 
 ```python
 class Model:
@@ -73,28 +98,54 @@ def read_model(file_path):
     data = ...
     return Model(data)
 
+# In the client code, I either have an initialised model or I have nothing.
 model = read_model("/path/to/file")
 ```
 
-### Good uses of classes
+## Globals
 
-A static container for data is an excellent use of a class.
-The [dataclasses](https://docs.python.org/3/library/dataclasses.html) package in the standard library (and backported as a pip installable package for older versions) is designed for exactly this use case.
+**Global variables are bad.**
 
-**Reason:** Immutable objects and functions acting on them are easy to debug.
+They introduce the potential for side effects, and there is **always** a way to do without them.
+Everything should have a clear scope; almost everything should have a *local* scope.
+Note that module level constants are not the same as global variables.
 
-```python
-from dataclasses import dataclass
+## Functions
 
-@dataclass
-class Task:
-    earliest_start: float
-    latest_start: float
-    resources
-```
+**Write pure functions as much as possible.**
 
-Furthermore, a big list of classes (especially with the `__slots__` attribute set) has less performance overhead than a big list of dictionaries due to recent shared-key optimisations in the CPython interpreter (see benchmarks).
+This means no side effects: the function has no state and its outputs are dependent only on its inputs.
+For the same set of arguments it should return the same result every time.
+Pure functions are very testable, functions that have or rely on side effects are hard to test.
 
-Where immutability leads to performance overhead, a class with a well defined invariant should be used.
-All public functions should error if they leave the object in a state where the invariant is violated.
-Use `icontracts` to enforce this.
+The counter-argument is that pure functions result in a lot of copying of data.
+However, ease of debugging and speed of development of pure functions more than compensates for performance overhead more often than you might think.
+Most people err too much on the side of "performance" and lose hours of time debugging the results of side effects and mutability.
+
+## Testing
+
+**Test your code by running tests** (not by running it end to end).
+
+* Use property-based testing, contracts and assertions.
+When writing a function, assert conditions on your inputs and your outputs.
+(You can do this with asserts but it's better to use a contracts library).
+Then throw a lot of test cases at it using a property based testing library and code until your asserts pass.
+* Write tests at a high level in your code.
+You want your tests to run minimal but complete working examples on well defined APIs that hit as many code paths as possible so there are no surprises later.
+* Be prepared to throw away your tests.
+Sometimes you'll find a small test is helpful as you develop a function but it outlives its usefulness pretty quickly.
+Throw it away if so ... don't confer intrinsic value on it just because it's a test.
+Property based testing makes it easy to write tests without much code, so you don't get too invested.
+
+# Tools to Use
+
+* [pytest-cov](https://github.com/pytest-dev/pytest-cov) - `pytest --cov module --cov-report=html` - see whether the else in your if is actually being hit by your tests.
+* [hypothesis](https://hypothesis.readthedocs.io/en/latest/) - generates data for property based testing.
+* [icontract](https://github.com/Parquery/icontract) - for contract definition. This one is broken on python3.8 and is a little over-engineered IMO ... I'm working on a replacement or a fix :-)
+* [black](https://black.readthedocs.io/en/stable/) - just let it take over. Drop pep8 and pylint. It will annoy you at first with some of its choices, but eventually you'll just give in.
+* [mypy](https://github.com/python/mypy) - type checking is sometimes useful, but even without types it should catch a lot of undefined variable type errors that pep8 and pylint do, without doubling up on formatters and annoying you about line lengths. But ... this is really the job of tests.
+
+# Benchmarks
+
+Know your tradeoffs between readability, mutability, reasonability and speed!
+Will put some useful test cases together here...
