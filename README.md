@@ -2,6 +2,8 @@
 
 *Work in progress!! I've written this readme page as a sort of aggressively aspirational list of thoughts on best practice. Next task is to collect a lot of code examples and add/remove/edit these guidelines as we go.*
 
+[How to Contribute](contributing.md)
+
 **The first programmers were mathematicians: so we should really be better at this than everyone else.** (I did say aspirational didn't I?)
 
 ## Why write this?
