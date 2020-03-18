@@ -3,3 +3,4 @@ hypothesis
 icontract
 pytest
 pytest-cov
+wrapt

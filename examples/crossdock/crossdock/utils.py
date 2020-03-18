@@ -8,6 +8,9 @@ TODO a require() decorator that transparently handles generators
 """
 
 import logging
+import json
+
+import wrapt
 
 
 def solve_wrapper(gurobi_model, *, callbacks, **params):
@@ -36,3 +39,32 @@ def solve_wrapper(gurobi_model, *, callbacks, **params):
     if callback_exception is not None:
         logging.error("Solve was interrupted by a callback failure.")
         raise callback_exception
+
+
+def decorate_json_writer(filepath_or_buffer, pretty=False):
+    pass
+
+
+@wrapt.decorator(adapter=decorate_json_writer)
+def json_writer(wrapped, instance, args, kwargs):
+    def execute(filepath_or_buffer, pretty=False):
+        obj = wrapped()
+        dump_kwargs = {"indent": 4} if pretty else {}
+        with open(filepath_or_buffer, "w") as outfile:
+            json.dump(obj, outfile, **dump_kwargs)
+
+    execute(*args, **kwargs)
+
+
+def decorate_json_reader(filepath_or_buffer):
+    pass
+
+
+@wrapt.decorator(adapter=decorate_json_reader)
+def json_reader(wrapped, instance, args, kwargs):
+    def execute(filepath_or_buffer):
+        with open(filepath_or_buffer) as infile:
+            obj = json.load(infile)
+        return wrapped(obj)
+
+    return execute(*args, **kwargs)

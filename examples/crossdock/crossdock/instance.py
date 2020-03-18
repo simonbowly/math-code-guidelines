@@ -8,6 +8,9 @@ from math import sqrt
 from random import Random
 from typing import Dict, FrozenSet, List, Tuple
 
+from .utils import json_reader, json_writer
+
+
 __all__ = ["read_json", "generate_random_instance"]
 
 
@@ -63,14 +66,12 @@ class CrossDockInstance:
     def distance(self, i: int, j: int) -> float:
         return self.distances.distance(i, j)
 
-    def to_json(self, file_path, pretty=False):
-        obj = {
+    @json_writer
+    def to_json(self):
+        return {
             "warehouse_demand": self.warehouse_demand,
             "points": self.distances.points,
         }
-        kwargs = {"indent": 4} if pretty else {}
-        with open(file_path, "w") as outfile:
-            json.dump(obj, outfile, **kwargs)
 
 
 @dataclass
@@ -108,9 +109,8 @@ class CrossDockSolution:
         )
 
 
-def read_json(file_path):
-    with open(file_path) as infile:
-        obj = json.load(infile)
+@json_reader
+def read_json(obj):
     return CrossDockInstance(
         warehouse_demand={
             int(warehouse): demand
