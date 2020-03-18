@@ -69,7 +69,11 @@ Here are the correct ways:
 * Immutable objects. Immutable objects represent input and output data in a structured and descriptive way.
 Because their data cannot change, there's no possibility of side effects.
 Use frozen structures (`frozenset`, `tuple`) and [dataclasses](https://docs.python.org/3/library/dataclasses.html) to define them.
-(Open question here re: whether to enforce immutability in code (e.g. [pyrsistent](https://pyrsistent.readthedocs.io/en/latest/)) or rely on the "Python is an adult programming language" mantra.
+    * Open question here re: whether to enforce immutability in code (e.g. [pyrsistent](https://pyrsistent.readthedocs.io/en/latest/)) or rely on the "Python is an adult programming language" mantra.
+    * Use `dataclass(frozen=True)`. This is a little inconsistent if you use mutable structures within it though. The absence of frozendicts in the language makes certain use cases tricky.
+    * Trust the user? Probably the main case to avoid is assignments.
+    * You could use the frozendicts package, but its old and was rejected from the python standard library (ref PEP).
+    * Building stuff from [pyrsistent](https://pypi.org/project/pyrsistent/) objects could be a good standard, but there's probably unnecessary overhead and complexity involved.
 
 * Mutable objects with well-defined invariants.
 Classes help you to define a public API for methods that users of the object should call (users being functions or other classes).
@@ -169,13 +173,6 @@ Working example of solving a crossdocking problem.
 
 * [Crossdocking MIP](examples/crossdock)
 
-# Immutability
-
-* Use `dataclass(frozen=True)`. This is a little inconsistent if you use mutable structures within it though. The absence of frozendicts in the language makes certain use cases tricky.
-* Trust the user? Probably the main case to avoid is assignments.
-* You could use the frozendicts package, but its old and was rejected from the python standard library (ref PEP).
-* Building stuff from [pyrsistent](https://pypi.org/project/pyrsistent/) objects could be the standard?
-
 # Readers
 
 Prefer standalone functions to class methods and static methods.
@@ -228,5 +225,5 @@ Finally a standalone `read()` function can delegate construction to different cl
 A classmethod cannot do this sanely.
 Choose the first option in the name of future-proofing and standardisation, and so that client code has no need to know the name of the class you've used.
 
-The client code workflow should be to read using `obj = module.read_format()` and written using `obj.to_format()`.
+The client code workflow should be to read using `obj = module.read_format()` and write using `obj.to_format()`.
 (This is the way `pandas` does things).
