@@ -81,13 +81,13 @@ def single_tour_heuristic(instance):
     TODO finish and integrate this as a start heuristic.
     """
 
-    order = [instance.crossdock_node()]
-    remaining = set(instance.all_demand_nodes())
+    order = [instance.crossdock_node]
+    remaining = set(instance.all_demand_nodes)
     while remaining:
         next_node = min(remaining, key=lambda n: instance.distance(order[-1], n))
         remaining.remove(next_node)
         order.append(next_node)
-    order.append(next(iter(instance.warehouse_nodes())))
+    order.append(next(iter(instance.warehouse_nodes)))
 
     def open_path_cost(order):
         return sum(instance.distance(i, j) for i, j in zip(order, order[1:]))

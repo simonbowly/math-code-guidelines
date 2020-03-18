@@ -39,15 +39,15 @@ def _initialise_variables(instance):
                     vtype=gurobipy.GRB.BINARY,
                     name=f"{phase}_{k}_{i}_{j}",
                 )
-                for i, j in itertools.permutations(instance.all_nodes(), r=2)
+                for i, j in itertools.permutations(instance.all_nodes, r=2)
             }
-            for k in instance.warehouse_nodes()
+            for k in instance.warehouse_nodes
         }
         for phase in ["pre", "post"]
     }
     dock_variables = {
         k: model.addVar(obj=0, vtype=gurobipy.GRB.BINARY, name=f"dock_{k}")
-        for k in instance.warehouse_nodes()
+        for k in instance.warehouse_nodes
     }
     model.update()
     return model, arc_variables, dock_variables
@@ -60,11 +60,11 @@ def _add_flow_constraints(instance, model, arc_variables, dock_variables):
     # need only be specified for nodes with demand from k??
     for phase, phase_arc_variables in arc_variables.items():
         for phase_w_arc_variables in phase_arc_variables.values():
-            for demand_node in instance.all_demand_nodes():
+            for demand_node in instance.all_demand_nodes:
                 model.addConstr(
                     gurobipy.quicksum(
                         phase_w_arc_variables[other, demand_node]
-                        for other in instance.all_nodes()
+                        for other in instance.all_nodes
                         if other != demand_node
                     )
                     <= 1
@@ -75,35 +75,35 @@ def _add_flow_constraints(instance, model, arc_variables, dock_variables):
                             phase_w_arc_variables[other, demand_node]
                             - phase_w_arc_variables[demand_node, other]
                         )
-                        for other in instance.all_nodes()
+                        for other in instance.all_nodes
                         if other != demand_node
                     )
                     == 0
                 )
     # Flow constraints at the crossdock (pre-ins balance post-outs).
     # Uses an intermediary variable which records whether truck k docks.
-    for warehouse_node in instance.warehouse_nodes():
+    for warehouse_node in instance.warehouse_nodes:
         dock_var_w = dock_variables[warehouse_node]
         pre_arc_w = arc_variables["pre"][warehouse_node]
         post_arc_w = arc_variables["post"][warehouse_node]
         # Use of post-dock arcs.
-        for i, j in itertools.permutations(instance.all_nodes(), r=2):
+        for i, j in itertools.permutations(instance.all_nodes, r=2):
             model.addConstr(post_arc_w[i, j] <= dock_var_w)
         # Dock arrivals.
         model.addConstr(
             gurobipy.quicksum(
-                pre_arc_w[other, instance.crossdock_node()]
-                for other in instance.all_nodes()
-                if other != instance.crossdock_node()
+                pre_arc_w[other, instance.crossdock_node]
+                for other in instance.all_nodes
+                if other != instance.crossdock_node
             )
             == dock_var_w
         )
         # Dock departures.
         model.addConstr(
             gurobipy.quicksum(
-                post_arc_w[instance.crossdock_node(), other]
-                for other in instance.all_nodes()
-                if other != instance.crossdock_node()
+                post_arc_w[instance.crossdock_node, other]
+                for other in instance.all_nodes
+                if other != instance.crossdock_node
             )
             == dock_var_w
         )
@@ -112,7 +112,7 @@ def _add_flow_constraints(instance, model, arc_variables, dock_variables):
         model.addConstr(
             gurobipy.quicksum(
                 pre_arc_w[warehouse_node, other]
-                for other in instance.all_nodes()
+                for other in instance.all_nodes
                 if other != warehouse_node
             )
             == 1
@@ -121,7 +121,7 @@ def _add_flow_constraints(instance, model, arc_variables, dock_variables):
         model.addConstr(
             gurobipy.quicksum(
                 (pre_arc_w[other, warehouse_node] + post_arc_w[other, warehouse_node])
-                for other in instance.all_nodes()
+                for other in instance.all_nodes
                 if other != warehouse_node
             )
             == 1
@@ -135,7 +135,7 @@ def _add_demand_constraints(instance, model, arc_variables, dock_variables):
     by any truck after going to the crossdock AND the truck from the appropriate
     warehouse also visits the dock. """
     # Demand served constraints.
-    for warehouse_node, demand_nodes_w in instance.warehouse_demand().items():
+    for warehouse_node, demand_nodes_w in instance.warehouse_demand.items():
         pre_arc_w = arc_variables["pre"][warehouse_node]
         dock_var_w = dock_variables[warehouse_node]
         for demand_node in demand_nodes_w:
@@ -144,41 +144,41 @@ def _add_demand_constraints(instance, model, arc_variables, dock_variables):
                 itertools.chain(
                     (
                         pre_arc_w[other, demand_node]
-                        for other in instance.all_nodes()
+                        for other in instance.all_nodes
                         if other != demand_node
                     ),
                     (
                         post_arc_w[other, demand_node] * dock_var_w
                         for post_arc_w in arc_variables["post"].values()
-                        for other in instance.all_nodes()
+                        for other in instance.all_nodes
                         if other != demand_node
                     ),
                 )
             )
             model.addConstr(incoming == 1)
     # Disallowed arcs. Using sets properly would mean these variables can be removed.
-    for warehouse_node in instance.warehouse_nodes():
+    for warehouse_node in instance.warehouse_nodes:
         pre_arc_w = arc_variables["pre"][warehouse_node]
         post_arc_w = arc_variables["post"][warehouse_node]
         # Truck k cannot visit any !k warehouse nodes.
         no_visit = [
-            node for node in instance.warehouse_nodes() if node != warehouse_node
+            node for node in instance.warehouse_nodes if node != warehouse_node
         ]
         for node in no_visit:
-            for other in instance.all_nodes():
+            for other in instance.all_nodes:
                 if node != other:
                     model.addConstr(pre_arc_w[node, other] == 0)
                     model.addConstr(pre_arc_w[other, node] == 0)
                     model.addConstr(post_arc_w[node, other] == 0)
                     model.addConstr(post_arc_w[other, node] == 0)
         # No post-dock truck should use an arc TO the crossdock.
-        for other in instance.all_nodes():
-            if other != instance.crossdock_node():
-                model.addConstr(post_arc_w[other, instance.crossdock_node()] == 0)
+        for other in instance.all_nodes:
+            if other != instance.crossdock_node:
+                model.addConstr(post_arc_w[other, instance.crossdock_node] == 0)
         # No pre-dock truck should use an arc FROM the crossdock.
-        for other in instance.all_nodes():
-            if other != instance.crossdock_node():
-                model.addConstr(pre_arc_w[instance.crossdock_node(), other] == 0)
+        for other in instance.all_nodes:
+            if other != instance.crossdock_node:
+                model.addConstr(pre_arc_w[instance.crossdock_node, other] == 0)
     model.update()
 
 

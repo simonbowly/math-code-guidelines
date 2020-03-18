@@ -2,6 +2,7 @@
 
 import json
 from collections import defaultdict
+from dataclasses import dataclass
 from functools import lru_cache
 from itertools import chain
 from math import sqrt
@@ -9,6 +10,7 @@ from random import Random
 from typing import Dict, FrozenSet, List, Tuple
 
 
+@dataclass(frozen=True)
 class CrossDockInstance:
     """
     points: x, y coordinate pairs
@@ -24,49 +26,51 @@ class CrossDockInstance:
     demand from the given warehouse)
     """
 
-    def __init__(self, warehouse_demand: Dict[int, List[int]], distances):
-        self._crossdock_node = 0
-        assert self._crossdock_node not in warehouse_demand.keys()
-        assert all(
-            self._crossdock_node not in nodes
-            and all(w not in nodes for w in warehouse_demand.keys())
-            for nodes in warehouse_demand.values()
-        )
-        self._warehouse_demand = warehouse_demand
-        self._distances = distances
+    warehouse_demand: Dict[int, List[int]]
+    distances: None
+
+    # def __init__(self, warehouse_demand: Dict[int, List[int]], distances):
+    #     self._crossdock_node = 0
+    #     assert self._crossdock_node not in warehouse_demand.keys()
+    #     assert all(
+    #         self._crossdock_node not in nodes
+    #         and all(w not in nodes for w in warehouse_demand.keys())
+    #         for nodes in warehouse_demand.values()
+    #     )
+    #     self._warehouse_demand = warehouse_demand
+    #     self._distances = distances
 
     def __repr__(self):
         return (
             "CrossDockInstance("
-            f"crossdock={self.crossdock_node()}, "
-            f"warehouses={self.warehouse_demand()})"
+            f"crossdock={self.crossdock_node}, "
+            f"warehouses={self.warehouse_demand})"
         )
 
+    @property
     def crossdock_node(self):
-        return self._crossdock_node
+        return 0
 
+    @property
     def warehouse_nodes(self):
-        return self._warehouse_demand.keys()
+        return self.warehouse_demand.keys()
 
-    def warehouse_demand(self):
-        return self._warehouse_demand
-
-    @lru_cache()
+    @property
     def all_nodes(self) -> FrozenSet[int]:
         return frozenset(
             chain(
-                [self._crossdock_node],
-                self._warehouse_demand.keys(),
-                *self._warehouse_demand.values(),
+                [self.crossdock_node],
+                self.warehouse_demand.keys(),
+                *self.warehouse_demand.values(),
             )
         )
 
-    @lru_cache()
+    @property
     def all_demand_nodes(self) -> FrozenSet[int]:
-        return frozenset(chain(*self._warehouse_demand.values()))
+        return frozenset(chain(*self.warehouse_demand.values()))
 
     def distance(self, i: int, j: int) -> float:
-        return self._distances.distance(i, j)
+        return self.distances.distance(i, j)
 
 
 class EuclideanDistances:

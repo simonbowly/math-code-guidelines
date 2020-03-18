@@ -34,8 +34,8 @@ st_instance = dictionaries(
 st_instance_euclidean = st_instance.flatmap(
     lambda instance: fixed_dictionaries(
         dict(
-            demand=just(instance.warehouse_demand()),
-            points=fixed_dictionaries({p: unit_square for p in instance.all_nodes()}),
+            demand=just(instance.warehouse_demand),
+            points=fixed_dictionaries({p: unit_square for p in instance.all_nodes}),
         )
     )
 ).map(
@@ -45,16 +45,15 @@ st_instance_euclidean = st_instance.flatmap(
 
 @given(st_instance)
 def test_instance_base(instance):
-    assert instance.crossdock_node() == 0
-    instance.warehouse_nodes()
-    instance.warehouse_demand()
-    assert all(n >= 0 for n in instance.all_nodes())
-    assert all(n > 20 for n in instance.all_demand_nodes())
+    assert instance.crossdock_node == 0
+    assert set(instance.warehouse_nodes) == set(instance.warehouse_demand)
+    assert all(n >= 0 for n in instance.all_nodes)
+    assert all(n > 20 for n in instance.all_demand_nodes)
 
 
 @given(st_instance_euclidean)
 def test_instance_euclidean(instance):
-    for i, j in permutations(instance.all_nodes(), r=2):
+    for i, j in permutations(instance.all_nodes, r=2):
         assert instance.distance(i, j) >= 0
 
 

@@ -69,8 +69,9 @@ Here are the correct ways:
 * Immutable objects. Immutable objects represent input and output data in a structured and descriptive way.
 Because their data cannot change, there's no possibility of side effects.
 Use frozen structures (`frozenset`, `tuple`) and [dataclasses](https://docs.python.org/3/library/dataclasses.html) to define them.
+(Open question here re: whether to enforce immutability in code (e.g. [pyrsistent](https://pyrsistent.readthedocs.io/en/latest/)) or rely on the "Python is an adult programming language" mantra.
 
-* Objects with well-defined invariants.
+* Mutable objects with well-defined invariants.
 Classes help you to define a public API for methods that users of the object should call (users being functions or other classes).
 Note that in Python there's no enforcement of public/private so you have to rely on naming conventions and documentation.
 Before and after any public method is called on the object, invariant checks should be made.
@@ -167,3 +168,16 @@ Will put some useful test cases together here, starting with:
 Working example of solving a crossdocking problem.
 
 * [Crossdocking MIP](examples/crossdock)
+
+# Immutability
+
+* Use `dataclass(frozen=True)`. This is a little inconsistent if you use mutable structures within it though. The absence of frozendicts in the language makes certain use cases tricky.
+* Trust the user? Probably the main case to avoid is assignments.
+* You could use the frozendicts package, but its old and was rejected from the python standard library (ref PEP).
+* Building stuff from [pyrsistent](https://pypi.org/project/pyrsistent/) objects could be the standard?
+
+# Readers
+
+Prefer `obj.to_format()` and `obj = read_format()` to class methods.
+Why? Less flow on effects if you change the class name, possibility to delegate to different classes within `read_format()` to take full advantage of duck typing.
+Precedent? Pandas does this!

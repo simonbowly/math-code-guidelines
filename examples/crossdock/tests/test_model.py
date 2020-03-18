@@ -21,8 +21,8 @@ def test_initialise_variables(instance):
     model, arc_variables, dock_variables = _initialise_variables(instance)
     assert set(arc_variables) == {"pre", "post"}
     for phase in ["pre", "post"]:
-        assert set(arc_variables[phase]) == set(instance.warehouse_nodes())
-    assert set(dock_variables) == set(instance.warehouse_nodes())
+        assert set(arc_variables[phase]) == set(instance.warehouse_nodes)
+    assert set(dock_variables) == set(instance.warehouse_nodes)
 
 
 @given(st_instance_euclidean)
