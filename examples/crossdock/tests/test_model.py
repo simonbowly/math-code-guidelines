@@ -57,7 +57,7 @@ def test_construct_model(instance):
 def test_extract_solution(arc_variables, expected):
     """ Wrote this static test specifically to help make a change in
     this single function. Bit laborious though... """
-    solution = extract_solution(None, arc_variables)
+    solution = extract_solution(arc_variables)
     assert solution.paths == expected
 
 

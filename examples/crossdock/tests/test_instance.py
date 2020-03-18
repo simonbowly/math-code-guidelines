@@ -1,4 +1,6 @@
 import io
+import pathlib
+import tempfile
 from itertools import permutations
 
 from hypothesis import given
@@ -15,8 +17,8 @@ from hypothesis.strategies import (
 from crossdock.instance import (
     CrossDockInstance,
     EuclideanDistances,
-    CrossDockSolution,
     generate_random_instance,
+    read_json,
 )
 
 unit_square = tuples(
@@ -45,6 +47,7 @@ st_instance_euclidean = st_instance.flatmap(
 
 @given(st_instance)
 def test_instance_base(instance):
+    repr(instance)
     assert instance.crossdock_node == 0
     assert set(instance.warehouse_nodes) == set(instance.warehouse_demand)
     assert all(n >= 0 for n in instance.all_nodes)
@@ -64,3 +67,12 @@ def test_instance_euclidean(instance):
 )
 def test_generate_random_instance(seed, npoints, nwarehouses):
     generate_random_instance(seed, npoints, nwarehouses)
+
+
+@given(st_instance_euclidean)
+def test_instance_json(instance):
+    with tempfile.TemporaryDirectory() as tempdir:
+        file_path = pathlib.Path(tempdir).joinpath("instance.json")
+        instance.to_json(file_path)
+        deserialised = read_json(file_path)
+    assert deserialised == instance

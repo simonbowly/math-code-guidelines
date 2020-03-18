@@ -161,9 +161,7 @@ def _add_demand_constraints(instance, model, arc_variables, dock_variables):
         pre_arc_w = arc_variables["pre"][warehouse_node]
         post_arc_w = arc_variables["post"][warehouse_node]
         # Truck k cannot visit any !k warehouse nodes.
-        no_visit = [
-            node for node in instance.warehouse_nodes if node != warehouse_node
-        ]
+        no_visit = [node for node in instance.warehouse_nodes if node != warehouse_node]
         for node in no_visit:
             for other in instance.all_nodes:
                 if node != other:
@@ -212,7 +210,7 @@ def construct_model(instance, *, hotstart_single_tour_order=None, fix_dock_vars=
     )
 
 
-def extract_solution(instance, arc_variables):
+def extract_solution(arc_variables):
     """ Process binary variables to return a list of arcs traversed in the
     solution by each warehouse/truck. """
     arcs = {
@@ -224,12 +222,11 @@ def extract_solution(instance, arc_variables):
     }
     arcs = {k: (arcs["pre"][k], arcs["post"][k]) for k in arcs["pre"].keys()}
     return CrossDockSolution(
-        instance,
         {
             warehouse_node: path_from_edges(pre_arcs, start=warehouse_node)
             + (path_from_edges(post_arcs, start=0)[1:] if post_arcs else [])
             for warehouse_node, (pre_arcs, post_arcs) in arcs.items()
-        },
+        }
     )
 
 
@@ -281,4 +278,4 @@ def solve_model(model, threads=None):
         LazyConstraints=1,
         Threads=threads,
     )
-    return extract_solution(model.instance, model.arc_variables)
+    return extract_solution(model.arc_variables)

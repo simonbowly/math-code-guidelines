@@ -1,7 +1,6 @@
 import logging
 
-from crossdock.algorithms import single_tour_heuristic
-from crossdock.instance import generate_random_instance, CrossDockSolution
+from crossdock.instance import generate_random_instance
 from crossdock.model import construct_model, solve_model
 
 

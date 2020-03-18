@@ -31,7 +31,7 @@ README.md
         |- simple.py        # Script generates and solves seeded random model.
 ```
 
-* Run `python -O scripts/simple.py` to run a test problem (optimised flag drops the pre- and post-condition checks run by icontract).
+* Run `python -O solver.py test_cases/some/file` to run a test problem (optimised flag drops the pre- and post-condition checks run by icontract).
 * Run `pytest --cov crossdock` to run tests and get module-level coverage info.
 
 # Testing

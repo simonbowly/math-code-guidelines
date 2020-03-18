@@ -178,6 +178,55 @@ Working example of solving a crossdocking problem.
 
 # Readers
 
-Prefer `obj.to_format()` and `obj = read_format()` to class methods.
-Why? Less flow on effects if you change the class name, possibility to delegate to different classes within `read_format()` to take full advantage of duck typing.
-Precedent? Pandas does this!
+Prefer standalone functions to class methods and static methods.
+
+For example, when reading a data file to create an object, prefer this:
+
+```python
+# -> in instance.py:
+
+class Instance:
+    ...
+
+def read_json(filepath_or_buffer):
+    return Instance(...)
+
+# -> in client code:
+import instance
+
+test_instance = instance.read_json("/path/to/file")
+...
+```
+
+to this
+
+```python
+# -> in instance.py:
+class Instance:
+    @classmethod
+    def read_json(cls, filepath_or_buffer):
+        return cls(...)
+
+# -> in client code:
+from instance import Instance
+
+test_instance = Instance.read_json("/path/to/file")
+```
+
+**Reason**
+
+There are a couple of reasons to use a `classmethod` in general:
+
+1. You need the functionality of the classmethod to be available to a subclass. See rule x regarding not using subclasses.
+2. It keeps the function in a smaller namespace bound to the class. See rule y regarding using multiple files/modules to manage namespaces sanely.
+3. You get to write `cls` instead of the class name twice.
+
+Regarding point 3: if you change the name of your class, you will have to change the name of the class in the standalone `read_json()` method.
+However if you change the name of the class while using a classmethod, *the class name needs to be changed in every bit of client code*.
+
+Finally a standalone `read()` function can delegate construction to different classes for different input to take full advantage of duck typing if you need to.
+A classmethod cannot do this sanely.
+Choose the first option in the name of future-proofing and standardisation, and so that client code has no need to know the name of the class you've used.
+
+The client code workflow should be to read using `obj = module.read_format()` and written using `obj.to_format()`.
+(This is the way `pandas` does things).

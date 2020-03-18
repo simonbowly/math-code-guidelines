@@ -1,16 +1,17 @@
 """ Problem instance and solution classes, random problem generator. """
 
 import json
-from collections import defaultdict
-from dataclasses import dataclass
-from functools import lru_cache
+from dataclasses import dataclass, field
 from itertools import chain
 from math import sqrt
 from random import Random
 from typing import Dict, FrozenSet, List, Tuple
 
 
-@dataclass(frozen=True)
+__all__ = ["read_json", "generate_random_instance"]
+
+
+@dataclass
 class CrossDockInstance:
     """
     points: x, y coordinate pairs
@@ -27,24 +28,14 @@ class CrossDockInstance:
     """
 
     warehouse_demand: Dict[int, List[int]]
-    distances: None
+    distances: None = field(repr=False)
 
-    # def __init__(self, warehouse_demand: Dict[int, List[int]], distances):
-    #     self._crossdock_node = 0
-    #     assert self._crossdock_node not in warehouse_demand.keys()
-    #     assert all(
-    #         self._crossdock_node not in nodes
-    #         and all(w not in nodes for w in warehouse_demand.keys())
-    #         for nodes in warehouse_demand.values()
-    #     )
-    #     self._warehouse_demand = warehouse_demand
-    #     self._distances = distances
-
-    def __repr__(self):
-        return (
-            "CrossDockInstance("
-            f"crossdock={self.crossdock_node}, "
-            f"warehouses={self.warehouse_demand})"
+    def __post_init__(self):
+        assert self.crossdock_node not in self.warehouse_demand.keys()
+        assert all(
+            self.crossdock_node not in nodes
+            and all(w not in nodes for w in self.warehouse_demand.keys())
+            for nodes in self.warehouse_demand.values()
         )
 
     @property
@@ -72,10 +63,20 @@ class CrossDockInstance:
     def distance(self, i: int, j: int) -> float:
         return self.distances.distance(i, j)
 
+    def to_json(self, file_path, pretty=False):
+        obj = {
+            "warehouse_demand": self.warehouse_demand,
+            "points": self.distances.points,
+        }
+        kwargs = {"indent": 4} if pretty else {}
+        with open(file_path, "w") as outfile:
+            json.dump(obj, outfile, **kwargs)
 
+
+@dataclass
 class EuclideanDistances:
-    def __init__(self, points: Dict[int, Tuple[float, float]]):
-        self.points = points
+
+    points: Dict[int, Tuple[float, float]]
 
     def distance(self, i: int, j: int) -> float:
         """ Return euclidean distance between points i and j. """
@@ -85,39 +86,40 @@ class EuclideanDistances:
         return sqrt(dx * dx + dy * dy)
 
 
+@dataclass
 class CrossDockSolution:
-    def __init__(self, instance, paths):
-        self.instance = instance
-        self.paths = paths
 
-    @lru_cache()
-    def cost(self, wnode):
-        return sum(
-            self.instance.distance(i, j)
-            for i, j in zip(self.paths[wnode], self.paths[wnode][1:])
-        )
+    paths: None
 
-    @lru_cache()
     def path_repr(self, wnode):
         return " -> ".join(
             "C" if node == 0 else "W" if node == wnode else str(node)
             for node in self.paths[wnode]
         )
 
-    @lru_cache()
-    def total_cost(self):
-        return sum(self.cost(wnode) for wnode in self.instance.warehouse_demand())
-
     def __repr__(self):
         return "\n".join(
-            [f"CrossDockSolution(cost={self.total_cost():.2f})"]
+            [f"CrossDockSolution"]
             + [
                 f"    Warehouse {warehouse_node} "
-                f"(Cost {self.cost(warehouse_node):.2f}) "
                 f"Path {self.path_repr(warehouse_node)}"
                 for warehouse_node, path in self.paths.items()
             ]
         )
+
+
+def read_json(file_path):
+    with open(file_path) as infile:
+        obj = json.load(infile)
+    return CrossDockInstance(
+        warehouse_demand={
+            int(warehouse): demand
+            for warehouse, demand in obj["warehouse_demand"].items()
+        },
+        distances=EuclideanDistances(
+            {int(label): tuple(point) for label, point in obj["points"].items()}
+        ),
+    )
 
 
 def generate_random_instance(seed: int, npoints: int, nwarehouses: int):
