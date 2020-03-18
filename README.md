@@ -23,6 +23,10 @@ They follow a general flow of:
 I think guides like this should be strongly opinionated, with an "if you do this, you're probably doing it wrong".
 The aim is to nudge new programmers towards best practice; it doesn't prevent a good programmer from going in a different direction, but should make it clear that "if you do it this way, you'd better know what you're doing".
 
+## Useful Background Reading
+
+* [How decorators work](background-reading/decorators.md)
+
 # Programming Concepts
 
 Python let's you do pretty much anything, so it's important to know what's appropriate when.
@@ -74,6 +78,7 @@ Use frozen structures (`frozenset`, `tuple`) and [dataclasses](https://docs.pyth
     * Trust the user? Probably the main case to avoid is assignments.
     * You could use the frozendicts package, but its old and was rejected from the python standard library (ref PEP).
     * Building stuff from [pyrsistent](https://pypi.org/project/pyrsistent/) objects could be a good standard, but there's probably unnecessary overhead and complexity involved.
+    * Use `functools.cached_property` to lazily compute derived properties of immutable objects.
 
 * Mutable objects with well-defined invariants.
 Classes help you to define a public API for methods that users of the object should call (users being functions or other classes).

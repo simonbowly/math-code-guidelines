@@ -2,11 +2,11 @@
 
 import json
 from dataclasses import dataclass, field
+from functools import cached_property
 from itertools import chain
 from math import sqrt
 from random import Random
 from typing import Dict, FrozenSet, List, Tuple
-
 
 __all__ = ["read_json", "generate_random_instance"]
 
@@ -46,7 +46,7 @@ class CrossDockInstance:
     def warehouse_nodes(self):
         return self.warehouse_demand.keys()
 
-    @property
+    @cached_property
     def all_nodes(self) -> FrozenSet[int]:
         return frozenset(
             chain(
@@ -56,7 +56,7 @@ class CrossDockInstance:
             )
         )
 
-    @property
+    @cached_property
     def all_demand_nodes(self) -> FrozenSet[int]:
         return frozenset(chain(*self.warehouse_demand.values()))
 
