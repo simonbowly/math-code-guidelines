@@ -7,3 +7,6 @@ Let's run this using pull requests so that the discussion is documented along th
 * To start a discussion about a guideline more generally: raise an issue (reference one of the examples or include code snippets).
 
 Let's debate things (politely ;-) )
+
+
+This way we will hopefully not have many conflicts
