@@ -232,3 +232,5 @@ Choose the first option in the name of future-proofing and standardisation, and 
 
 The client code workflow should be to read using `obj = module.read_format()` and write using `obj.to_format()`.
 (This is the way `pandas` does things).
+
+Something something something dark side...
