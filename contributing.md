@@ -8,5 +8,4 @@ Let's run this using pull requests so that the discussion is documented along th
 
 Let's debate things (politely ;-) )
 
-
-This way we will hopefully not have many conflicts
+Or maybe we want all the conflicts?
