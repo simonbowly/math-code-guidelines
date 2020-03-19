@@ -6,7 +6,10 @@ from functools import cached_property
 from itertools import chain
 from math import sqrt
 from random import Random
-from typing import Dict, FrozenSet, List, Tuple
+from typing import Any, Dict, FrozenSet, List, Tuple
+
+from .utils import json_reader, json_writer
+
 
 __all__ = ["read_json", "generate_random_instance"]
 
@@ -15,7 +18,7 @@ __all__ = ["read_json", "generate_random_instance"]
 class CrossDockInstance:
 
     warehouse_demand: Dict[int, List[int]]
-    distances: None = field(repr=False)
+    distances: Any
 
     def __post_init__(self):
         assert self.crossdock_node not in self.warehouse_demand.keys()
@@ -50,20 +53,29 @@ class CrossDockInstance:
     def distance(self, i: int, j: int) -> float:
         return self.distances.distance(i, j)
 
-    def to_json(self, file_path, pretty=False):
-        obj = {
-            "warehouse_demand": self.warehouse_demand,
-            "points": self.distances.points,
+    @json_writer
+    def to_json(self):
+        return {
+            "warehouse_demand": [
+                {"warehouse": warehouse, "demand_nodes": demand_nodes}
+                for warehouse, demand_nodes in self.warehouse_demand.items()
+            ],
+            "distance": self.distances.to_dict(),
         }
-        kwargs = {"indent": 4} if pretty else {}
-        with open(file_path, "w") as outfile:
-            json.dump(obj, outfile, **kwargs)
 
 
 @dataclass
 class EuclideanDistances:
 
-    points: Dict[int, Tuple[float, float]]
+    points: Dict[int, Tuple[float, float]] = field(repr=False)
+
+    def to_dict(self):
+        return {
+            "type": "euclidean_2d",
+            "points": [
+                {"label": label, "point": point} for label, point in self.points.items()
+            ],
+        }
 
     def distance(self, i: int, j: int) -> float:
         """ Return euclidean distance between points i and j. """
@@ -71,6 +83,15 @@ class EuclideanDistances:
         dx = self.points[i][0] - self.points[j][0]
         dy = self.points[i][1] - self.points[j][1]
         return sqrt(dx * dx + dy * dy)
+
+
+@dataclass
+class ExplicitDistances:
+
+    matrix: Dict[Tuple[int, int], float]
+
+    def distance(self, i: int, j: int) -> float:
+        return self.matrix[i, j]
 
 
 @dataclass
@@ -95,17 +116,21 @@ class CrossDockSolution:
         )
 
 
-def read_json(file_path):
-    with open(file_path) as infile:
-        obj = json.load(infile)
+def read_distances(obj):
+    if obj["type"] == "euclidean_2d":
+        return EuclideanDistances(
+            {entry["label"]: tuple(entry["point"]) for entry in obj["points"]}
+        )
+
+
+@json_reader
+def read_json(obj):
     return CrossDockInstance(
         warehouse_demand={
-            int(warehouse): demand
-            for warehouse, demand in obj["warehouse_demand"].items()
+            entry["warehouse"]: entry["demand_nodes"]
+            for entry in obj["warehouse_demand"]
         },
-        distances=EuclideanDistances(
-            {int(label): tuple(point) for label, point in obj["points"].items()}
-        ),
+        distances=read_distances(obj["distance"]),
     )
 
 

@@ -76,3 +76,12 @@ def test_instance_json(instance):
         instance.to_json(file_path)
         deserialised = read_json(file_path)
     assert deserialised == instance
+
+
+@given(st_instance_euclidean)
+def test_instance_compressed_json(instance):
+    with tempfile.TemporaryDirectory() as tempdir:
+        file_path = pathlib.Path(tempdir).joinpath("instance.json.gz")
+        instance.to_json(file_path, compress=True)
+        deserialised = read_json(file_path)
+    assert deserialised == instance
