@@ -13,19 +13,6 @@ __all__ = ["read_json", "generate_random_instance"]
 
 @dataclass
 class CrossDockInstance:
-    """
-    points: x, y coordinate pairs
-    crossdock_node: point index giving the dock location
-    warehouse_nodes: point index giving the dock location
-    demand_nodes: for each warehouse, list of points it must deliver to
-
-    TODO add dock/no-dock constraints at the instance level, so that the
-    quadratic constraints are never realised if dock variables are fixed
-    TODO add a decompose() method which creates the component subproblems
-    TODO don't make variables for redundant arcs (skip all post- arcs if a
-    truck is forced to skip the dock, only make pre-arcs for nodes with
-    demand from the given warehouse)
-    """
 
     warehouse_demand: Dict[int, List[int]]
     distances: None = field(repr=False)
