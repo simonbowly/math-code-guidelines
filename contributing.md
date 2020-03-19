@@ -6,4 +6,4 @@ Let's run this using pull requests so that the discussion is documented along th
 * To submit code examples: add code in a subdirectory of `examples` and submit a pull request.
 * To start a discussion about a guideline more generally: raise an issue (reference one of the examples or include code snippets).
 
-Let's debate things!
+Let's debate things (politely ;-) )
