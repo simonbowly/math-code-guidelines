@@ -1,6 +1,7 @@
 """ Problem instance and solution classes, random problem generator. """
 
 import json
+import logging
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
@@ -9,6 +10,7 @@ from random import Random
 from typing import Dict, FrozenSet, List, Tuple
 
 __all__ = ["read_json", "generate_random_instance"]
+logger = logging.getLogger(__name__)
 
 
 @dataclass

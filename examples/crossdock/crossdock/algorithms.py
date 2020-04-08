@@ -2,9 +2,12 @@
 using require/ensure, which allows randomised tests to find errors and will fail
 if other code tries to use it incorrectly (in debug mode at least). """
 
+import logging
 from typing import List, Tuple
 
 from icontract import require, ensure
+
+logger = logging.getLogger(__name__)
 
 
 def unique(gen):

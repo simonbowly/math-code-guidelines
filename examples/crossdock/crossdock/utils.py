@@ -9,6 +9,8 @@ TODO a require() decorator that transparently handles generators
 
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def solve_wrapper(gurobi_model, *, callbacks, **params):
     """ Allows callbacks to be defined using a mapping from the gurobi where
@@ -23,7 +25,7 @@ def solve_wrapper(gurobi_model, *, callbacks, **params):
             try:
                 callbacks[where](cb_model)
             except Exception as e:
-                logging.exception("Failure in callback. Terminating solve.")
+                logger.exception("Failure in callback. Terminating solve.")
                 cb_model.terminate()
                 nonlocal callback_exception
                 callback_exception = e
@@ -34,5 +36,5 @@ def solve_wrapper(gurobi_model, *, callbacks, **params):
 
     gurobi_model.optimize(callback)
     if callback_exception is not None:
-        logging.error("Solve was interrupted by a callback failure.")
+        logger.error("Solve was interrupted by a callback failure.")
         raise callback_exception

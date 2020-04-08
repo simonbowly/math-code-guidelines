@@ -18,8 +18,8 @@ from .algorithms import get_subtours, path_from_edges
 from .instance import CrossDockSolution
 from .utils import solve_wrapper
 
-
 __all__ = ["construct_model", "solve_model"]
+logger = logging.getLogger(__name__)
 
 
 def _initialise_variables(instance):
@@ -249,7 +249,7 @@ def subtour_elimination_callback(model, arc_variables):
             if subtours:
                 shortest = min(subtours, key=len)
                 if len(shortest) < len(edges):
-                    logging.info(
+                    logger.info(
                         f"Subtour elimination for length {len(shortest)} "
                         f"path (phase {phase}, warehouse {k})"
                     )
